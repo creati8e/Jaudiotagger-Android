@@ -1,4 +1,3 @@
-
 package org.jaudiotagger.audio.aiff;
 
 import org.jaudiotagger.audio.AudioFileIO;

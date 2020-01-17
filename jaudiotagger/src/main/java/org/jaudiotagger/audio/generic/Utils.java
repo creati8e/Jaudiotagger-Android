@@ -22,7 +22,11 @@ import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.utils.FileTypeUtil;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -38,12 +42,12 @@ import static org.jaudiotagger.StandardCharsets.US_ASCII;
  *
  * @author Raphael Slinckx
  */
+@SuppressWarnings("WeakerAccess")
 public class Utils {
-    public static int BITS_IN_BYTE_MULTIPLIER = 8;
-    public static int KILOBYTE_MULTIPLIER = 1000;
-
     private static final Logger logger = Logger.getLogger("org.jaudiotagger.audio.generic.utils");
     private static final int MAX_BASE_TEMP_FILENAME_LENGTH = 20;
+    public static int BITS_IN_BYTE_MULTIPLIER = 8;
+    public static int KILOBYTE_MULTIPLIER = 1000;
 
     /**
      * Returns the extension of the given file.
@@ -499,9 +503,6 @@ public class Utils {
      * @return true if length is an odd number
      */
     public static boolean isOddLength(long length) {
-        if ((length & 1) != 0) {
-            return true;
-        }
-        return false;
+        return (length & 1) != 0;
     }
 }

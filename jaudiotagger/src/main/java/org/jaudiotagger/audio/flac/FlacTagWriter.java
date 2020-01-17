@@ -21,7 +21,15 @@ package org.jaudiotagger.audio.flac;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.CannotWriteException;
-import org.jaudiotagger.audio.flac.metadatablock.*;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlock;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockData;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockDataApplication;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockDataCueSheet;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockDataPadding;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockDataPicture;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockDataSeekTable;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockDataStreamInfo;
+import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockHeader;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagOptionSingleton;
 import org.jaudiotagger.tag.flac.FlacTag;
@@ -63,14 +71,6 @@ public class FlacTagWriter {
         //This will save the file without any Comment or PictureData blocks  
         FlacTag emptyTag = new FlacTag(null, new ArrayList<MetadataBlockDataPicture>());
         write(emptyTag, file);
-    }
-
-    private static class MetadataBlockInfo {
-        private MetadataBlock streamInfoBlock;
-        private List<MetadataBlock> metadataBlockPadding = new ArrayList<MetadataBlock>(1);
-        private List<MetadataBlock> metadataBlockApplication = new ArrayList<MetadataBlock>(1);
-        private List<MetadataBlock> metadataBlockSeekTable = new ArrayList<MetadataBlock>(1);
-        private List<MetadataBlock> metadataBlockCueSheet = new ArrayList<MetadataBlock>(1);
     }
 
     /**
@@ -227,7 +227,6 @@ public class FlacTagWriter {
         //Write Audio
         fc.write(audioData);
     }
-
 
     /**
      * Insert metadata into space that is not large enough
@@ -486,6 +485,14 @@ public class FlacTagWriter {
         }
 
         return length;
+    }
+
+    private static class MetadataBlockInfo {
+        private MetadataBlock streamInfoBlock;
+        private List<MetadataBlock> metadataBlockPadding = new ArrayList<MetadataBlock>(1);
+        private List<MetadataBlock> metadataBlockApplication = new ArrayList<MetadataBlock>(1);
+        private List<MetadataBlock> metadataBlockSeekTable = new ArrayList<MetadataBlock>(1);
+        private List<MetadataBlock> metadataBlockCueSheet = new ArrayList<MetadataBlock>(1);
     }
 }
 

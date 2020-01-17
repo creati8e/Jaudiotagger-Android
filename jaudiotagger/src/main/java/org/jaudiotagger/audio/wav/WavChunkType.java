@@ -8,8 +8,7 @@ import java.util.Map;
  *
  * @see org.jaudiotagger.audio.iff.Chunk
  */
-public enum WavChunkType
-{
+public enum WavChunkType {
     FORMAT("fmt ", "Basic Audio Information"),
     FACT("fact", "Only strictly required for Non-PCM or compressed data"),
     DATA("data", "Stores the actual audio data"),
@@ -18,12 +17,19 @@ public enum WavChunkType
     ID3("id3 ", "Stores metadata in ID3 chunk"),
     CORRUPT_LIST("iLIS", "List chunk, wraps round other chunks"),
     CORRUPT_ID3_LATE("d3 \u0000", "Stores metadata in ID3 chunk"),
-    CORRUPT_ID3_EARLY("\u0000id3", "Stores metadata in ID3 chunk");
-    ;
+    CORRUPT_ID3_EARLY("\u0000id3", "Stores metadata in ID3 chunk");;
 
     private static final Map<String, WavChunkType> CODE_TYPE_MAP = new HashMap<String, WavChunkType>();
     private String code;
     private String description;
+
+    /**
+     * @param code 4 char string
+     */
+    WavChunkType(final String code, String description) {
+        this.code = code;
+        this.description = description;
+    }
 
     /**
      * Get {@link WavChunkType} for code (e.g. "SSND").
@@ -41,21 +47,11 @@ public enum WavChunkType
     }
 
     /**
-     * @param code 4 char string
-     */
-    WavChunkType(final String code, String description)
-    {
-        this.code=code;
-        this.description=description;
-    }
-
-    /**
      * 4 char type code.
      *
      * @return 4 char type code, e.g. "SSND" for the sound chunk.
      */
-    public String getCode()
-    {
+    public String getCode() {
         return code;
     }
 }

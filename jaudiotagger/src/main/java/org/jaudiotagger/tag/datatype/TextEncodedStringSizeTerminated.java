@@ -6,7 +6,13 @@ import org.jaudiotagger.tag.id3.AbstractTagFrameBody;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.*;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,13 +52,29 @@ public class TextEncodedStringSizeTerminated extends AbstractString {
         super(object);
     }
 
+    /**
+     * Split the values separated by null character
+     *
+     * @param value the raw value
+     * @return list of values, guaranteed to be at least one value
+     */
+    public static List<String> splitByNullSeperator(String value) {
+        String[] valuesarray = value.split("\\u0000");
+        List<String> values = Arrays.asList(valuesarray);
+        //Read only list so if empty have to create new list
+        if (values.size() == 0) {
+            values = new ArrayList<String>(1);
+            values.add("");
+        }
+        return values;
+    }
+
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
         return obj instanceof TextEncodedStringSizeTerminated && super.equals(obj);
     }
-
 
     /**
      * Read a 'n' bytes from buffer into a String where n is the framesize - offset
@@ -127,7 +149,6 @@ public class TextEncodedStringSizeTerminated extends AbstractString {
         bb.rewind();
         return bb;
     }
-
 
     /**
      * Write String in UTF-LEBOM format
@@ -283,25 +304,6 @@ public class TextEncodedStringSizeTerminated extends AbstractString {
         }
         return data;
     }
-
-
-    /**
-     * Split the values separated by null character
-     *
-     * @param value the raw value
-     * @return list of values, guaranteed to be at least one value
-     */
-    public static List<String> splitByNullSeperator(String value) {
-        String[] valuesarray = value.split("\\u0000");
-        List<String> values = Arrays.asList(valuesarray);
-        //Read only list so if empty have to create new list
-        if (values.size() == 0) {
-            values = new ArrayList<String>(1);
-            values.add("");
-        }
-        return values;
-    }
-
 
     /**
      * Add an additional String to the current String value

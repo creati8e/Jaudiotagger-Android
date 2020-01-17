@@ -8,8 +8,7 @@ import java.io.IOException;
 /**
  * Represents artwork in a format independent  way
  */
-public interface Artwork
-{
+public interface Artwork {
     public byte[] getBinaryData();
 
 
@@ -21,11 +20,15 @@ public interface Artwork
 
     public String getDescription();
 
+    public void setDescription(String description);
+
     public int getHeight();
+
+    public void setHeight(int height);
 
     public int getWidth();
 
-    public void setDescription(String description);
+    public void setWidth(int width);
 
     /**
      * Should be called when you wish to prime the artwork for saving
@@ -54,7 +57,7 @@ public interface Artwork
      * @param file
      * @throws IOException
      */
-    public void setFromFile(File file)  throws IOException;
+    public void setFromFile(File file) throws IOException;
 
     /**
      * Populate Artwork from MetadataBlockDataPicture as used by Flac and VorbisComment
@@ -62,9 +65,4 @@ public interface Artwork
      * @param coverArt
      */
     public void setFromMetadataBlockDataPicture(MetadataBlockDataPicture coverArt);
-
-
-    public void setWidth(int width);
-
-    public void setHeight(int height);
 }

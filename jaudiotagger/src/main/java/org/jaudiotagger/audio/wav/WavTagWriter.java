@@ -28,11 +28,19 @@ import org.jaudiotagger.audio.iff.ChunkSummary;
 import org.jaudiotagger.audio.iff.IffHeaderChunk;
 import org.jaudiotagger.audio.wav.chunk.WavChunkSummary;
 import org.jaudiotagger.audio.wav.chunk.WavInfoIdentifier;
-import org.jaudiotagger.tag.*;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagField;
+import org.jaudiotagger.tag.TagOptionSingleton;
+import org.jaudiotagger.tag.TagTextField;
 import org.jaudiotagger.tag.wav.WavInfoTag;
 import org.jaudiotagger.tag.wav.WavTag;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -49,15 +57,14 @@ import static org.jaudiotagger.audio.iff.IffHeaderChunk.SIZE_LENGTH;
  * Write Wav Tag.
  */
 public class WavTagWriter {
+    // Logger Object
+    public static Logger logger = Logger.getLogger("org.jaudiotagger.audio.wav");
     //For logging
     private String loggingName;
 
     public WavTagWriter(String loggingName) {
         this.loggingName = loggingName;
     }
-
-    // Logger Object
-    public static Logger logger = Logger.getLogger("org.jaudiotagger.audio.wav");
 
     /**
      * Read existing metadata
@@ -406,22 +413,6 @@ public class WavTagWriter {
         fc.write(ByteBuffer.allocateDirect(paddingSize));
     }
 
-    class InfoFieldWriterOrderComparator implements Comparator<TagField> {
-        public int compare(TagField field1, TagField field2) {
-            WavInfoIdentifier code1 = WavInfoIdentifier.getByByFieldKey(FieldKey.valueOf(field1.getId()));
-            WavInfoIdentifier code2 = WavInfoIdentifier.getByByFieldKey(FieldKey.valueOf(field2.getId()));
-            int order1 = Integer.MAX_VALUE;
-            int order2 = Integer.MAX_VALUE;
-            if (code1 != null) {
-                order1 = code1.getPreferredWriteOrder();
-            }
-            if (code2 != null) {
-                order2 = code2.getPreferredWriteOrder();
-            }
-            return order1 - order2;
-        }
-    }
-
     /**
      * Converts INfO tag to {@link ByteBuffer}.
      *
@@ -546,21 +537,6 @@ public class WavTagWriter {
     }
 
     /**
-     * Used when writing both tags to work out the best way to do it
-     */
-    class BothTagsFileStructure {
-        boolean isInfoTagFirst = false;
-        boolean isContiguous = false;
-        boolean isAtEnd = false;
-
-        public String toString() {
-            return "IsInfoTagFirst:" + isInfoTagFirst
-                    + ":isContiguous:" + isContiguous
-                    + ":isAtEnd:" + isAtEnd;
-        }
-    }
-
-    /**
      * Identify where both metadata chunks are in relation to each other and other chunks
      *
      * @param wavTag
@@ -632,7 +608,6 @@ public class WavTagWriter {
         }
     }
 
-
     /**
      * @param existingTag
      * @param fc
@@ -654,7 +629,6 @@ public class WavTagWriter {
         return ((existingTag.getInfoTag().getEndLocationInFile() == fc.size()) ||
                 (((existingTag.getInfoTag().getEndLocationInFile() & 1) != 0) && existingTag.getInfoTag().getEndLocationInFile() + 1 == fc.size()));
     }
-
 
     /**
      * Save both Info and ID3 chunk
@@ -917,6 +891,37 @@ public class WavTagWriter {
         else {
             logger.severe(loggingName + " Truncating corrupted metadata tags from:" + (existingTag.getInfoTag().getStartLocationInFile()));
             fc.truncate(existingTag.getInfoTag().getStartLocationInFile());
+        }
+    }
+
+    class InfoFieldWriterOrderComparator implements Comparator<TagField> {
+        public int compare(TagField field1, TagField field2) {
+            WavInfoIdentifier code1 = WavInfoIdentifier.getByByFieldKey(FieldKey.valueOf(field1.getId()));
+            WavInfoIdentifier code2 = WavInfoIdentifier.getByByFieldKey(FieldKey.valueOf(field2.getId()));
+            int order1 = Integer.MAX_VALUE;
+            int order2 = Integer.MAX_VALUE;
+            if (code1 != null) {
+                order1 = code1.getPreferredWriteOrder();
+            }
+            if (code2 != null) {
+                order2 = code2.getPreferredWriteOrder();
+            }
+            return order1 - order2;
+        }
+    }
+
+    /**
+     * Used when writing both tags to work out the best way to do it
+     */
+    class BothTagsFileStructure {
+        boolean isInfoTagFirst = false;
+        boolean isContiguous = false;
+        boolean isAtEnd = false;
+
+        public String toString() {
+            return "IsInfoTagFirst:" + isInfoTagFirst
+                    + ":isContiguous:" + isContiguous
+                    + ":isAtEnd:" + isAtEnd;
         }
     }
 

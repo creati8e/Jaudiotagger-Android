@@ -28,7 +28,11 @@ import org.jaudiotagger.logging.ErrorMessage;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagOptionSingleton;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.logging.Level;
@@ -48,19 +52,16 @@ import java.util.logging.Logger;
  * @since v0.02
  */
 public abstract class AudioFileWriter {
+    protected static final int MINIMUM_FILESIZE = 100;
     private static final String TEMP_FILENAME_SUFFIX = ".tmp";
     private static final String WRITE_MODE = "rw";
-    protected static final int MINIMUM_FILESIZE = 100;
-
-    // Logger Object
-    public static Logger logger = Logger.getLogger("org.jaudiotagger.audio.generic");
-
     //If filename too long try recreating it with length no longer than 50 that should be safe on all operating
     //systems
     private static final String FILE_NAME_TOO_LONG = "File name too long";
     private static final String FILE_NAME_TOO_LONG2 = "The filename, directory name, or volume label syntax is incorrect";
     private static final int FILE_NAME_TOO_LONG_SAFE_LIMIT = 50;
-
+    // Logger Object
+    public static Logger logger = Logger.getLogger("org.jaudiotagger.audio.generic");
     /**
      * If not <code>null</code>, this listener is used to notify the listener
      * about modification events.<br>

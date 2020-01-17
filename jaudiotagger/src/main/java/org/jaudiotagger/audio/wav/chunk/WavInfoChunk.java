@@ -28,6 +28,15 @@ public class WavInfoChunk {
         tag.setInfoTag(wavInfoTag);
     }
 
+    private static boolean isAlphabetic(int codePoint) {
+        return (((((1 << Character.UPPERCASE_LETTER) |
+                (1 << Character.LOWERCASE_LETTER) |
+                (1 << Character.TITLECASE_LETTER) |
+                (1 << Character.MODIFIER_LETTER) |
+                (1 << Character.OTHER_LETTER) |
+                (1 << Character.LETTER_NUMBER)) >> Character.getType(codePoint)) & 1) != 0);
+    }
+
     /**
      * Read Info chunk
      *
@@ -80,14 +89,5 @@ public class WavInfoChunk {
             }
         }
         return true;
-    }
-
-    private static boolean isAlphabetic(int codePoint) {
-        return (((((1 << Character.UPPERCASE_LETTER) |
-                (1 << Character.LOWERCASE_LETTER) |
-                (1 << Character.TITLECASE_LETTER) |
-                (1 << Character.MODIFIER_LETTER) |
-                (1 << Character.OTHER_LETTER) |
-                (1 << Character.LETTER_NUMBER)) >> Character.getType(codePoint)) & 1) != 0);
     }
 }
