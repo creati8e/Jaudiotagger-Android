@@ -309,11 +309,11 @@ public class ID3v24Frame extends AbstractID3v2Frame {
             }
         }
         // Unknown Frame e.g NCON or TDRL (because TDRL unknown to V23)
-        else {
-            this.frameBody = new FrameBodyUnsupported((FrameBodyUnsupported) frame.getBody());
+        else if (frame.getBody() instanceof FrameBodyDeprecated) {
+            this.frameBody = new FrameBodyDeprecated((FrameBodyDeprecated) frame.getBody());
             this.frameBody.setHeader(this);
             identifier = frame.getIdentifier();
-            logger.finer("V3:Unknown:Orig id is:" + frame.getIdentifier() + ":New id is:" + identifier);
+            logger.finer("V3:Deprecated:Orig id is:" + frame.getIdentifier() + ":New id is:" + identifier);
         }
     }
 
