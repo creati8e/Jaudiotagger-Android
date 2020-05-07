@@ -135,6 +135,9 @@ public class Mp4TrackField extends Mp4TagTextNumberField {
      * @return
      */
     public Short getTrackNo() {
+        if (numbers.size() <= TRACK_NO_INDEX) {
+            return 0;
+        }
         return numbers.get(TRACK_NO_INDEX);
     }
 
