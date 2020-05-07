@@ -50,9 +50,9 @@ import org.jaudiotagger.tag.reference.PictureTypes;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -903,11 +903,7 @@ public class ID3v23Tag extends AbstractID3v2Tag {
             body.setObjectValue(DataTypes.OBJ_DESCRIPTION, "");
             return frame;
         } else {
-            try {
-                body.setObjectValue(DataTypes.OBJ_PICTURE_DATA, artwork.getImageUrl().getBytes("ISO-8859-1"));
-            } catch (UnsupportedEncodingException uoe) {
-                throw new RuntimeException(uoe.getMessage());
-            }
+            body.setObjectValue(DataTypes.OBJ_PICTURE_DATA, artwork.getImageUrl().getBytes(StandardCharsets.ISO_8859_1));
             body.setObjectValue(DataTypes.OBJ_PICTURE_TYPE, artwork.getPictureType());
             body.setObjectValue(DataTypes.OBJ_MIME_TYPE, FrameBodyAPIC.IMAGE_IS_URL);
             body.setObjectValue(DataTypes.OBJ_DESCRIPTION, "");
@@ -1174,6 +1170,23 @@ public class ID3v23Tag extends AbstractID3v2Tag {
             }
         } else {
             return super.getFields(genericKey);
+        }
+    }
+
+    /**
+     * Remove frame(s) with this identifier from tag
+     *
+     * @param identifier frameId to look for
+     */
+    public void removeFrame(String identifier) {
+        logger.config("Removing frame with identifier:" + identifier);
+        frameMap.remove(identifier);
+
+        if (identifier.equals(ID3v23Frames.FRAME_ID_V3_TYER)) {
+            frameMap.remove(ID3v23Frames.FRAME_ID_V3_TYER);
+            frameMap.remove(TyerTdatAggregatedFrame.ID_TYER_TDAT);
+        } else {
+            frameMap.remove(identifier);
         }
     }
 

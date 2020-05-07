@@ -64,7 +64,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -82,6 +81,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.logging.Level;
 
@@ -179,10 +179,7 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
         byte[] tagIdentifier = new byte[FIELD_TAGID_LENGTH];
         raf.read(tagIdentifier);
         raf.seek(start);
-        if (!(Arrays.equals(tagIdentifier, TAG_ID))) {
-            return false;
-        }
-        return true;
+        return Arrays.equals(tagIdentifier, TAG_ID);
     }
 
     private static boolean isID3V2Header(FileChannel fc) throws IOException {
@@ -774,6 +771,10 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
 
             Object obj = frameMap.get(field.getId());
 
+            if (Objects.equals(field.getId(), ID3v23Frames.FRAME_ID_V3_TYER)) {
+                frameMap.remove(ID3v23Frames.FRAME_ID_V3_TYER);
+                frameMap.remove(TyerTdatAggregatedFrame.ID_TYER_TDAT);
+            }
 
             //If no frame of this type exist or if multiples are not allowed
             if (obj == null) {
@@ -1980,13 +1981,7 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
         AbstractID3v2Frame frame = createFrame(formatKey.getFrameId());
         if (frame.getBody() instanceof FrameBodyUFID) {
             ((FrameBodyUFID) frame.getBody()).setOwner(formatKey.getSubId());
-            try {
-                ((FrameBodyUFID) frame.getBody()).setUniqueIdentifier(value.getBytes("ISO-8859-1"));
-            } catch (UnsupportedEncodingException uee) {
-                //This will never happen because we are using a charset supported on all platforms
-                //but just in case
-                throw new RuntimeException("When encoding UFID charset ISO-8859-1 was deemed unsupported");
-            }
+            ((FrameBodyUFID) frame.getBody()).setUniqueIdentifier(value.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
         } else if (frame.getBody() instanceof FrameBodyTXXX) {
             ((FrameBodyTXXX) frame.getBody()).setDescription(formatKey.getSubId());
             ((FrameBodyTXXX) frame.getBody()).setText(value);
