@@ -2079,7 +2079,12 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
                         }
                     }
                 } else {
-                    throw new RuntimeException("Need to implement getFields(FieldKey genericKey) for:" + next.getClass());
+                    logger.severe(
+                            getLoggingFilename()
+                                    + ":Need to implement getFields(FieldKey genericKey) for:"
+                                    + formatKey
+                                    + next.getClass()
+                    );
                 }
             }
         }
@@ -2405,10 +2410,13 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
                             filteredList.add(tagfield);
                         }
                     }
-                } else if (next instanceof FrameBodyUnsupported) {
-                    return list;
                 } else {
-                    throw new RuntimeException("Need to implement getFields(FieldKey genericKey) for:" + next.getClass());
+                    logger.severe(
+                            getLoggingFilename()
+                                    + ":Need to implement getFields(FieldKey genericKey) for:"
+                                    + formatKey
+                                    + next.getClass()
+                    );
                 }
             }
             return filteredList;
