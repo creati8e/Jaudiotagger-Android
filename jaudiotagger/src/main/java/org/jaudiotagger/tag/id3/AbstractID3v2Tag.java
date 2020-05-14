@@ -30,6 +30,7 @@ import org.jaudiotagger.tag.InvalidFrameException;
 import org.jaudiotagger.tag.KeyNotFoundException;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagField;
+import org.jaudiotagger.tag.TagOptionSingleton;
 import org.jaudiotagger.tag.datatype.DataTypes;
 import org.jaudiotagger.tag.datatype.Pair;
 import org.jaudiotagger.tag.datatype.PairedTextEncodedStringNullTerminated;
@@ -55,6 +56,7 @@ import org.jaudiotagger.tag.id3.valuepair.StandardIPLSKey;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.reference.Languages;
 import org.jaudiotagger.tag.reference.PictureTypes;
+import org.jaudiotagger.utils.ShiftData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -1131,15 +1133,20 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
      * @return
      */
     protected int calculateTagSize(int tagSize, int preferredSize) {
-        /** We can fit in the tag so no adjustments required */
-        if (tagSize <= preferredSize) {
-            return preferredSize;
+        if (TagOptionSingleton.getInstance().isId3v2PaddingWillShorten()) {
+            //We just use reuired size
+            return tagSize;
+        } else {
+            //We can fit in the tag so no adjustments required
+            if (tagSize <= preferredSize) {
+                return preferredSize;
+            }
+            //There is not enough room as we need to move the audio file we might
+            //as well increase it more than necessary for future changes
+            return tagSize + TAG_SIZE_INCREMENT;
         }
-        /** There is not enough room as we need to move the audio file we might
-         *  as well increase it more than neccessary for future changes
-         */
-        return tagSize + TAG_SIZE_INCREMENT;
     }
+
 
     /**
      * Adjust the length of the  padding at the beginning of the MP3 file, this is only called when there is currently
@@ -1164,7 +1171,7 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
         //Create buffer holds the necessary padding
         ByteBuffer paddingBuffer = ByteBuffer.wrap(new byte[paddingSize]);
 
-        //Create Temporary File and write channel, make sure it is locked        
+        //Create Temporary File and write channel, make sure it is locked
         File paddedFile;
 
         try {
@@ -1288,14 +1295,22 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
         FileChannel fc = null;
         FileLock fileLock = null;
 
-        //We need to adjust location of audio file if true
-        if (sizeIncPadding > audioStartLocation) {
-            logger.finest("Adjusting Padding");
-            adjustPadding(file, sizeIncPadding, audioStartLocation);
-        }
-
         try {
             fc = new RandomAccessFile(file, "rw").getChannel();
+
+            //We need to adjust location of audio file if true
+            if (sizeIncPadding > audioStartLocation) {
+                logger.finest("Adjusting Padding");
+                fc.position(audioStartLocation);
+                ShiftData.shiftDataByOffsetToMakeSpace(fc, (int) (sizeIncPadding - audioStartLocation));
+            } else if (TagOptionSingleton.getInstance().isId3v2PaddingWillShorten()
+                    && sizeIncPadding < audioStartLocation
+            ) {
+                fc.position(audioStartLocation);
+                ShiftData.shiftDataByOffsetToShrinkSpace(fc, (int) (audioStartLocation - sizeIncPadding));
+            }
+
+            fc.position(0);
             fileLock = getFileLockForWriting(fc, file.getPath());
             fc.write(headerBuffer);
             fc.write(ByteBuffer.wrap(bodyByteBuffer));
@@ -2308,7 +2323,7 @@ public abstract class AbstractID3v2Tag extends AbstractID3Tag implements Tag {
                     }
                 }
                 //A single IPLS frame is used for multiple fields, so we just delete the matching pairs rather than
-                //deleting the frame itself unless now empty 
+                //deleting the frame itself unless now empty
                 else if (next instanceof FrameBodyIPLS) {
                     PairedTextEncodedStringNullTerminated.ValuePairs pairs = ((FrameBodyIPLS) next).getPairing();
                     ListIterator<Pair> pairIterator = pairs.getMapping().listIterator();
